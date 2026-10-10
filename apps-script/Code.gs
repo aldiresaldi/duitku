@@ -6,8 +6,8 @@ const TOKEN = 'GANTI_DENGAN_TOKEN_RAHASIA_PANJANG'; // wajib diganti!
 const SALARY_DEFAULT = 17582078;
 const SHEET_NAME = 'Transaksi';
 const SEARCH_QUERY =
-  '(from:noreply.livin@bankmandiri.co.id subject:"Pembayaran Berhasil") OR ' +
-  '(from:nexwave_donotreply@hrms.bipocloud.com subject:"Payment Slip") newer_than:14d';
+  '((from:noreply.livin@bankmandiri.co.id subject:"Pembayaran Berhasil") OR ' +
+  '(from:nexwave_donotreply@hrms.bipocloud.com subject:"Payment Slip")) after:2026/09/27';
 
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

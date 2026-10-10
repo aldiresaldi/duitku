@@ -40,7 +40,7 @@ export async function initializeMonth(month: number, year: number): Promise<bool
     return false;
   }
 
-  const templates = await db.monthlyTemplates.where('isActive').equals(1).toArray();
+  const templates = (await db.monthlyTemplates.toArray()).filter((t) => t.isActive);
 
   const now = new Date();
   const transactions = templates.map((t) => ({
