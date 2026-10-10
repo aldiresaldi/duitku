@@ -43,6 +43,16 @@ class FinanceDB extends Dexie {
         }
       }
     });
+
+    // Hapus transaksi template rutin (tanggal awal periode 00:00, bukan dari email/manual).
+    this.version(5).stores({}).upgrade(async (tx) => {
+      const all = await tx.table('transactions').toArray();
+      for (const t of all) {
+        const d = new Date(t.createdAt);
+        const isTemplateDate = d.getDate() === 29 && d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0;
+        if (!t.refId && isTemplateDate) await tx.table('transactions').delete(t.id);
+      }
+    });
   }
 }
 

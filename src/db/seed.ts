@@ -2,6 +2,8 @@ import { db } from './database';
 import type { MonthlyTemplate } from './types';
 import { getMonthYearKey } from '../utils/format';
 
+const USE_MONTHLY_TEMPLATES = false;
+
 const DEFAULT_TEMPLATES: Omit<MonthlyTemplate, 'id'>[] = [
   { description: 'Gaji', amount: 17_582_078, type: 'income', note: '', isActive: true },
   { description: 'Hutang', amount: 1_750_000, type: 'expense', note: 'Target Lunas Agustus 2027', isActive: true },
@@ -40,7 +42,10 @@ export async function initializeMonth(month: number, year: number): Promise<bool
     return false;
   }
 
-  const templates = (await db.monthlyTemplates.toArray()).filter((t) => t.isActive);
+  // Untuk saat ini transaksi hanya dari email (atau input manual); template rutin dimatikan.
+  const templates = USE_MONTHLY_TEMPLATES
+    ? (await db.monthlyTemplates.toArray()).filter((t) => t.isActive)
+    : [];
 
   const now = new Date();
   // Tanggal template = awal periode gajian (tanggal 29 bulan sebelumnya, 00:00).
