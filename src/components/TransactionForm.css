@@ -187,3 +187,31 @@
     gap: 8px;
   }
 }
+
+.panel__header--clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 8px;
+  margin: -8px;
+  border-radius: var(--radius-md);
+}
+
+.panel__header--clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel__toggle-btn {
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  color: var(--accent-purple);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.panel__header--clickable:hover .panel__toggle-btn {
+  background: rgba(167, 139, 250, 0.25);
+}
