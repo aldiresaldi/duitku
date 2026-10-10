@@ -6,7 +6,7 @@ const TOKEN = 'GANTI_DENGAN_TOKEN_RAHASIA_PANJANG'; // wajib diganti!
 const SALARY_DEFAULT = 17582078;
 const SHEET_NAME = 'Transaksi';
 const SEARCH_QUERY =
-  '((from:noreply.livin@bankmandiri.co.id subject:"Pembayaran Berhasil") OR ' +
+  '((from:noreply.livin@bankmandiri.co.id (subject:"Pembayaran Berhasil" OR subject:"Top-up Berhasil")) OR ' +
   '(from:bca@bca.co.id subject:"Internet Transaction Journal") OR ' +
   '(from:nexwave_donotreply@hrms.bipocloud.com subject:"Payment Slip")) after:2026/09/27';
 
@@ -67,11 +67,17 @@ function processEmails() {
       const date = msg.getDate();
 
       if (from.indexOf('bankmandiri.co.id') !== -1) {
-        const ref = 'livin-' + (body.match(/No\.?\s*Referensi\s+(\d+)/i) || [])[1];
-        const nominal = (body.match(/Nominal Transaksi\s+Rp\s*([\d.,]+)/i) || [])[1];
+        const refNum = (body.match(/Referensi[\s\S]{0,40}?(\d{8,})/i) || [])[1];
+        const ref = 'livin-' + refNum;
+        const nominal = (body.match(/Total Transaksi\s+Rp\s*([\d.,]+)/i) ||
+          body.match(/Nominal (?:Transaksi|Top-?up)\s+Rp\s*([\d.,]+)/i) || [])[1];
         const penerima = (body.match(/Penerima\s+([^\r\n]+)/i) || [])[1];
-        if (ref === 'livin-undefined' || !nominal || known.has(ref)) return;
-        sh.appendRow([ref, date.toISOString(), (penerima || 'Pembayaran QRIS').trim(),
+        const penyedia = (body.match(/Penyedia Jasa\s+([^\r\n]+)/i) || [])[1];
+        let desc = (penerima || '').trim();
+        if (!desc && penyedia) desc = /go-?pay/i.test(penyedia) ? 'Top up GoPay' : 'Top-up ' + penyedia.trim();
+        if (!desc) desc = 'Pembayaran QRIS';
+        if (!refNum || !nominal || known.has(ref)) return;
+        sh.appendRow([ref, date.toISOString(), desc,
           parseAmount_(nominal), 'expense', 'livin']);
         known.add(ref);
       } else if (from.indexOf('bca.co.id') !== -1) {
