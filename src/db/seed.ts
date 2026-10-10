@@ -93,4 +93,30 @@ export async function initializeApp(): Promise<void> {
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
   await initializeMonth(currentMonth, currentYear);
+  await seedManualEntries();
+}
+
+/** Pengeluaran manual (transfer BCA) periode Oktober 2026; refId mencegah dobel. */
+const MANUAL_ENTRIES = [
+  { refId: 'manual-bca-20260930-kontrakan', description: 'Kontrakan', amount: 1_000_000, note: 'Transfer BCA ke RIJAH', date: new Date(2026, 8, 30, 9, 53, 32) },
+  { refId: 'manual-bca-20261001-hutang', description: 'Hutang bulanan (angsuran ke 15)', amount: 1_750_000, note: 'Transfer BCA ke TRIYANI (biaya admin Rp 2.500)', date: new Date(2026, 9, 1, 8, 14, 0) },
+  { refId: 'manual-bca-20261001-gadai', description: 'Ambil gadai laptop', amount: 4_250_000, note: 'Transfer BCA ke RIJAH', date: new Date(2026, 9, 1, 8, 15, 24) },
+  { refId: 'manual-bca-20261001-mamah', description: 'Bayar hutang ke mamah', amount: 3_100_000, note: 'Transfer BCA ke RIJAH', date: new Date(2026, 9, 1, 11, 20, 7) },
+];
+
+async function seedManualEntries(): Promise<void> {
+  await initializeMonth(10, 2026);
+  for (const e of MANUAL_ENTRIES) {
+    if (await db.transactions.where('refId').equals(e.refId).count()) continue;
+    await db.transactions.add({
+      description: e.description,
+      amount: e.amount,
+      type: 'expense',
+      note: e.note,
+      month: 10,
+      year: 2026,
+      createdAt: e.date,
+      refId: e.refId,
+    });
+  }
 }
