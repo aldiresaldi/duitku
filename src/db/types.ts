@@ -7,6 +7,7 @@ export interface Transaction {
   month: number; // 1-12
   year: number;
   createdAt: Date;
+  refId?: string; // unique id from email sync (dedupe)
 }
 
 export interface MonthlyTemplate {
@@ -34,3 +35,4 @@ export interface Summary {
   totalExpense: number;
   surplus: number;
 }
+

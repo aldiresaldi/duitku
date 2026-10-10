@@ -14,7 +14,11 @@ class FinanceDB extends Dexie {
       monthlyTemplates: '++id, type, isActive',
       monthStatus: 'id',
     });
+    this.version(2).stores({
+      transactions: '++id, type, [month+year], refId',
+    });
   }
 }
 
 export const db = new FinanceDB();
+

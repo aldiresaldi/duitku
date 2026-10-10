@@ -8,6 +8,7 @@ import { MonthNavigator } from './components/MonthNavigator';
 import { SummaryCards } from './components/SummaryCards';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionTable } from './components/TransactionTable';
+import { SyncPanel } from './components/SyncPanel';
 import { ToastContainer } from './components/Toast';
 import './App.css';
 
@@ -56,6 +57,8 @@ export default function App() {
         onNext={goToNextMonth}
         onGoToMonth={goToMonth}
       />
+
+      <SyncPanel onShowToast={showToast} />
 
       <SummaryCards summary={summary} />
 
