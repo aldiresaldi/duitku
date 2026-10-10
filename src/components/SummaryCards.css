@@ -1,0 +1,148 @@
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.summary-card {
+  position: relative;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.summary-card:nth-child(1) { animation: cardFadeIn 0.5s ease-out 0.1s both; }
+.summary-card:nth-child(2) { animation: cardFadeIn 0.5s ease-out 0.2s both; }
+.summary-card:nth-child(3) { animation: cardFadeIn 0.5s ease-out 0.3s both; }
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.summary-card--income::before {
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+.summary-card--expense::before {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+}
+.summary-card--surplus::before {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+}
+
+.summary-card:hover {
+  border-color: var(--border-glass-hover);
+  transform: translateY(-4px);
+}
+
+.summary-card--income:hover {
+  box-shadow: 0 0 30px rgba(52, 211, 153, 0.15);
+}
+.summary-card--expense:hover {
+  box-shadow: 0 0 30px rgba(248, 113, 113, 0.15);
+}
+.summary-card--surplus:hover {
+  box-shadow: 0 0 30px rgba(96, 165, 250, 0.15);
+}
+
+.summary-card__icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.summary-card__icon-wrap--income {
+  background: rgba(52, 211, 153, 0.15);
+}
+.summary-card__icon-wrap--expense {
+  background: rgba(248, 113, 113, 0.15);
+}
+.summary-card__icon-wrap--surplus {
+  background: rgba(96, 165, 250, 0.15);
+}
+
+.summary-card__icon {
+  font-size: 22px;
+}
+
+.summary-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.summary-card__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+
+.summary-card__value {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.3s ease;
+}
+
+.summary-card__value--income { color: var(--accent-green); }
+.summary-card__value--expense { color: var(--accent-red); }
+.summary-card__value--surplus { color: var(--accent-blue); }
+.summary-card__value--negative { color: var(--accent-red) !important; }
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .summary-card {
+    padding: 20px;
+  }
+
+  .summary-card__value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-card__value {
+    font-size: 18px;
+  }
+
+  .summary-card__icon-wrap {
+    width: 40px;
+    height: 40px;
+  }
+}
