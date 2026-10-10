@@ -43,6 +43,8 @@ export async function initializeMonth(month: number, year: number): Promise<bool
   const templates = (await db.monthlyTemplates.toArray()).filter((t) => t.isActive);
 
   const now = new Date();
+  // Tanggal template = awal periode gajian (tanggal 29 bulan sebelumnya, 00:00).
+  const periodStart = new Date(year, month - 2, 29, 0, 0, 0, 0);
   const transactions = templates.map((t) => ({
     description: t.description,
     amount: t.amount,
@@ -50,7 +52,7 @@ export async function initializeMonth(month: number, year: number): Promise<bool
     note: t.note,
     month,
     year,
-    createdAt: now,
+    createdAt: periodStart,
   }));
 
   await db.transaction('rw', [db.transactions, db.monthStatus], async () => {

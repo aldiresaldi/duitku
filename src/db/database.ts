@@ -27,6 +27,22 @@ class FinanceDB extends Dexie {
         if (!txs.some((t) => !t.refId)) await tx.table('monthStatus').delete(s.id);
       }
     });
+
+    // Perbaikan: transaksi template lama bertanggal waktu pembuatan -> awal periode (29 bulan sebelumnya).
+    this.version(4).stores({}).upgrade(async (tx) => {
+      const statuses = await tx.table('monthStatus').toArray();
+      for (const s of statuses) {
+        const [y, m] = String(s.id).split('-').map(Number);
+        const init = new Date(s.initializedAt).getTime();
+        const start = new Date(y, m - 2, 29, 0, 0, 0, 0);
+        const txs = await tx.table('transactions').where('[month+year]').equals([m, y]).toArray();
+        for (const t of txs) {
+          if (!t.refId && Math.abs(new Date(t.createdAt).getTime() - init) < 5000) {
+            await tx.table('transactions').update(t.id, { createdAt: start });
+          }
+        }
+      }
+    });
   }
 }
 

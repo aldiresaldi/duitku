@@ -63,7 +63,11 @@ export function TransactionTable({ transactions, onDelete, onShowToast }: Transa
                   </td>
                   <td className="td-date">
                     <div className="td-date__primary">{formatDate(tx.createdAt)}</div>
-                    <div className="td-date__secondary">{formatTime(tx.createdAt)}</div>
+                    {new Date(tx.createdAt).getTime() % 60000 !== 0 || new Date(tx.createdAt).getHours() !== 0 || new Date(tx.createdAt).getMinutes() !== 0 ? (
+                      <div className="td-date__secondary">{formatTime(tx.createdAt)}</div>
+                    ) : (
+                      <div className="td-date__secondary">Rutin bulanan</div>
+                    )}
                   </td>
                   <td className={`td-amount td-amount--${tx.type}`}>
                     {tx.type === 'income' ? '+' : '-'} {formatRupiah(tx.amount)}
