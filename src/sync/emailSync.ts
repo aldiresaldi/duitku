@@ -86,11 +86,29 @@ export async function syncFromEmail(cfg: SyncConfig): Promise<number> {
       if (hasSalary) continue;
     }
 
+    // Hindari dobel: entri manual/lama dengan nominal sama dan waktu berdekatan (±10 menit).
+    const sameMonth = await db.transactions.where('[month+year]').equals([month, year]).toArray();
+    const isDup = sameMonth.some(
+      (t) =>
+        t.type === r.type &&
+        t.amount === r.amount &&
+        Math.abs(new Date(t.createdAt).getTime() - d.getTime()) < 10 * 60 * 1000 &&
+        (t.refId?.startsWith('manual-') || t.description === r.description)
+    );
+    if (isDup) continue;
+
     await db.transactions.add({
       description: r.description,
       amount: r.amount,
       type: r.type,
-      note: r.source === 'livin' ? 'Otomatis dari email Livin\u2019' : 'Otomatis dari email',
+      note:
+        r.description === 'Top up GoPay'
+          ? 'Isi dompet GoPay (rincian pemakaian tidak tercatat)'
+          : r.source === 'livin'
+            ? 'Otomatis dari email Livin\u2019'
+            : r.source === 'bca'
+              ? 'Otomatis dari email BCA'
+              : 'Otomatis dari email',
       month,
       year,
       createdAt: d,
