@@ -14,11 +14,6 @@ interface Saved {
   remark: string;
 }
 
-// Saldo riil yang Anda laporkan untuk Oktober 2026 (bisa diubah di aplikasi).
-const DEFAULTS: Record<string, Saved> = {
-  '2026-10': { balance: 3_700_000, remark: '' },
-};
-
 export function BalanceCheck({ summary, month, year }: Props) {
   const key = `duitku-balance-${year}-${String(month).padStart(2, '0')}`;
   const load = (): Saved | null => {
@@ -26,7 +21,7 @@ export function BalanceCheck({ summary, month, year }: Props) {
       const raw = localStorage.getItem(key);
       if (raw) return JSON.parse(raw) as Saved;
     } catch { /* ignore */ }
-    return DEFAULTS[`${year}-${String(month).padStart(2, '0')}`] ?? null;
+    return null;
   };
 
   const [saved, setSaved] = useState<Saved | null>(load);
