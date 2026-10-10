@@ -1,14 +1,14 @@
 /**
  * DuitKu - Gmail sync (Google Apps Script)
- * Cara pakai: lihat apps-script/README.md
+ * Versi Terbaru: Mandiri Livin (Pengeluaran), skip BCA Aldi, BIPO Gaji dinamis.
  */
-const TOKEN = 'GANTI_DENGAN_TOKEN_RAHASIA_PANJANG'; // wajib diganti!
+const TOKEN = 'GANTI_DENGAN_TOKEN_RAHASIA_PANJANG'; // Wajib diganti dengan token Anda!
 const SALARY_DEFAULT = 17582078;
 const SHEET_NAME = 'Transaksi';
+
 const SEARCH_QUERY =
-  '((from:noreply.livin@bankmandiri.co.id (subject:"Pembayaran Berhasil" OR subject:"Top-up Berhasil")) OR ' +
-  '(from:bca@bca.co.id subject:"Internet Transaction Journal") OR ' +
-  '(from:nexwave_donotreply@hrms.bipocloud.com subject:"Payment Slip")) after:2026/09/27';
+  '((from:noreply.livin@bankmandiri.co.id (subject:"Pembayaran Berhasil" OR subject:"Top-up Berhasil" OR subject:"Transfer Berhasil")) OR ' +
+  '(from:nexwave_donotreply@hrms.bipocloud.com subject:"Payment Slip")) after:2026/07/28';
 
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -21,38 +21,7 @@ function getSheet_() {
 }
 
 function parseAmount_(str) {
-  // "130.000,00" -> 130000
   return parseInt(String(str).split(',')[0].replace(/\./g, ''), 10);
-}
-
-function parseAmountEn_(str) {
-  // "45,000.00" -> 45000
-  return Math.round(parseFloat(String(str).replace(/,/g, '')));
-}
-
-/** Email BCA "Internet Transaction Journal" (QRIS, Virtual Account/GoPay, transfer). */
-function parseBca_(body) {
-  const field = function (name) {
-    const m = body.match(new RegExp(name + '\\s*:\\s*([^\\r\\n]+)', 'i'));
-    return m ? m[1].trim() : '';
-  };
-  const amt = (body.match(/Total Payment\s*:\s*IDR\s*([\d.,]+)/i) ||
-    body.match(/Transfer Amount\s*:\s*IDR\s*([\d.,]+)/i) ||
-    body.match(/Pay Amount\s*:\s*IDR\s*([\d.,]+)/i) ||
-    body.match(/Amount\s*:\s*IDR\s*([\d.,]+)/i) || [])[1];
-  const ref = (body.match(/Reference No\.?\s*:\s*([A-Za-z0-9]+)/i) || [])[1];
-  if (!amt || !ref) return null;
-
-  const product = field('Company/Product Name');
-  let desc;
-  if (/go-?pay/i.test(product)) desc = 'Top up GoPay';
-  else if (field('Payment to')) desc = field('Payment to');
-  else if (product) desc = product;
-  else if (field('Beneficiary Name')) desc = 'Transfer ke ' + field('Beneficiary Name');
-  else desc = 'Transaksi BCA';
-  const remarks = field('Remarks') || field('Description');
-  if (remarks && desc.indexOf('Transfer ke') === 0) desc += ' (' + remarks + ')';
-  return { refId: 'bca-' + ref, description: desc, amount: parseAmountEn_(amt) };
 }
 
 function processEmails() {
@@ -69,40 +38,57 @@ function processEmails() {
       if (from.indexOf('bankmandiri.co.id') !== -1) {
         const refNum = (body.match(/Referensi[\s\S]{0,40}?(\d{8,})/i) || [])[1];
         const ref = 'livin-' + refNum;
+        if (!refNum || known.has(ref)) return;
+
         const nominal = (body.match(/Total Transaksi\s+Rp\s*([\d.,]+)/i) ||
           body.match(/Nominal (?:Transaksi|Top-?up)\s+Rp\s*([\d.,]+)/i) || [])[1];
-        const penerima = (body.match(/Penerima\s+([^\r\n]+)/i) || [])[1];
+        if (!nominal) return;
+
+        // Aturan: Jika transfer ke BCA atas nama aldi, kita SKIP
+        const bodyLower = body.toLowerCase();
+        if (bodyLower.includes('aldi') && (bodyLower.includes('bca') || bodyLower.includes('central asia'))) {
+          known.add(ref); // Tandai sudah diproses agar tidak dibaca berulang
+          return; // Skip, jangan masuk ke Excel
+        }
+
+        const penerima = (body.match(/(?:Penerima|Nama Tujuan)\s+([^\r\n]+)/i) || [])[1];
         const penyedia = (body.match(/Penyedia Jasa\s+([^\r\n]+)/i) || [])[1];
+        
         let desc = (penerima || '').trim();
-        if (!desc && penyedia) desc = /go-?pay/i.test(penyedia) ? 'Top up GoPay' : 'Top-up ' + penyedia.trim();
-        if (!desc) desc = 'Pembayaran QRIS';
-        if (!refNum || !nominal || known.has(ref)) return;
-        sh.appendRow([ref, date.toISOString(), desc,
-          parseAmount_(nominal), 'expense', 'livin']);
+        if (!desc && penyedia) {
+          // Top up gopay otomatis dihitung sebagai pengeluaran
+          desc = /go-?pay/i.test(penyedia) ? 'Top up GoPay' : 'Top-up ' + penyedia.trim();
+        }
+        if (!desc) desc = 'Pengeluaran Mandiri';
+
+        sh.appendRow([ref, date.toISOString(), desc, parseAmount_(nominal), 'expense', 'livin']);
         known.add(ref);
-      } else if (from.indexOf('bca.co.id') !== -1) {
-        const p = parseBca_(body);
-        if (!p || known.has(p.refId)) return;
-        sh.appendRow([p.refId, date.toISOString(), p.description, p.amount, 'expense', 'bca']);
-        known.add(p.refId);
+
       } else if (from.indexOf('bipocloud.com') !== -1) {
         const ref = 'slip-' + msg.getId();
         if (known.has(ref)) return;
-        sh.appendRow([ref, date.toISOString(), 'Gaji (slip BIPO)', SALARY_DEFAULT, 'income', 'bipo']);
+
+        // Aturan: Gaji bisa masuk tgl 26/27/28/29.
+        // Agar rapi masuk ke periode bulan baru di aplikasi web (yang mulai tiap tgl 29),
+        // kita ubah tanggal datanya menjadi minimal tgl 29 bulan tersebut.
+        let d = new Date(date.getTime());
+        if (d.getDate() >= 25 && d.getDate() < 29) {
+          d.setDate(29);
+        }
+
+        sh.appendRow([ref, d.toISOString(), 'Gaji (slip BIPO)', SALARY_DEFAULT, 'income', 'bipo']);
         known.add(ref);
       }
     });
   });
 }
 
-/** Jalankan SEKALI untuk membuat pengecekan otomatis tiap 5 menit. */
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('processEmails').timeBased().everyMinutes(5).create();
   processEmails();
 }
 
-/** Endpoint untuk aplikasi: ?token=... */
 function doGet(e) {
   const out = ContentService.createTextOutput().setMimeType(ContentService.MimeType.JSON);
   if (!e || !e.parameter || e.parameter.token !== TOKEN) {

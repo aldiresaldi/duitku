@@ -146,3 +146,34 @@
     height: 40px;
   }
 }
+
+.summary-card__value-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-toggle-visibility {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.btn-toggle-visibility:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.1);
+}
+
+.btn-toggle-visibility:active {
+  transform: scale(0.95);
+}
