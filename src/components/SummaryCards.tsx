@@ -10,14 +10,37 @@ interface SummaryCardsProps {
 export function SummaryCards({ summary }: SummaryCardsProps) {
   const surplusClass = summary.surplus < 0 ? 'summary-card__value--negative' : '';
   const [isIncomeVisible, setIsIncomeVisible] = useState(false);
+  const [isSurplusVisible, setIsSurplusVisible] = useState(false);
+
+  // Generate password dinamis berdasarkan tanggal (YYYYMMDD)
+  const getDynamicPassword = () => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    return `${yyyy}${mm}${dd}`;
+  };
 
   const handleToggleIncome = () => {
     if (isIncomeVisible) {
       setIsIncomeVisible(false);
     } else {
       const pwd = prompt('Masukkan password untuk melihat Pemasukan:');
-      if (pwd === 'aldizix6ZWY') {
+      if (pwd === getDynamicPassword()) {
         setIsIncomeVisible(true);
+      } else if (pwd !== null && pwd !== '') {
+        alert('Password salah!');
+      }
+    }
+  };
+
+  const handleToggleSurplus = () => {
+    if (isSurplusVisible) {
+      setIsSurplusVisible(false);
+    } else {
+      const pwd = prompt('Masukkan password untuk melihat Surplus:');
+      if (pwd === getDynamicPassword()) {
+        setIsSurplusVisible(true);
       } else if (pwd !== null && pwd !== '') {
         alert('Password salah!');
       }
@@ -40,6 +63,7 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
               className="btn-toggle-visibility"
               onClick={handleToggleIncome}
               title={isIncomeVisible ? "Sembunyikan" : "Tampilkan"}
+              aria-label={isIncomeVisible ? "Sembunyikan Pemasukan" : "Tampilkan Pemasukan"}
             >
               {isIncomeVisible ? '🙈' : '👁️'}
             </button>
@@ -65,8 +89,18 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
         </div>
         <div className="summary-card__content">
           <div className="summary-card__label">Sisa Uang (Surplus)</div>
-          <div className={`summary-card__value summary-card__value--surplus ${surplusClass}`} id="totalSurplus">
-            {formatRupiah(summary.surplus)}
+          <div className="summary-card__value-wrapper">
+            <div className={`summary-card__value summary-card__value--surplus ${surplusClass}`} id="totalSurplus">
+              {isSurplusVisible ? formatRupiah(summary.surplus) : 'Rp ****'}
+            </div>
+            <button
+              className="btn-toggle-visibility"
+              onClick={handleToggleSurplus}
+              title={isSurplusVisible ? "Sembunyikan" : "Tampilkan"}
+              aria-label={isSurplusVisible ? "Sembunyikan Surplus" : "Tampilkan Surplus"}
+            >
+              {isSurplusVisible ? '🙈' : '👁️'}
+            </button>
           </div>
         </div>
       </div>
