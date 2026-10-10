@@ -9,11 +9,17 @@ import type { Transaction, Summary } from '../db/types';
  */
 export function useTransactions(month: number, year: number) {
   const transactions = useLiveQuery(
-    () =>
-      db.transactions
+    async () => {
+      const list = await db.transactions
         .where('[month+year]')
         .equals([month, year])
-        .toArray(),
+        .toArray();
+      return list.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime() ||
+          (a.id ?? 0) - (b.id ?? 0)
+      );
+    },
     [month, year],
     [] as Transaction[]
   );
