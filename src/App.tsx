@@ -9,6 +9,7 @@ import { SummaryCards } from './components/SummaryCards';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionTable } from './components/TransactionTable';
 import { SyncPanel } from './components/SyncPanel';
+import { BalanceCheck } from './components/BalanceCheck';
 import { ToastContainer } from './components/Toast';
 import './App.css';
 
@@ -61,6 +62,8 @@ export default function App() {
       <SyncPanel onShowToast={showToast} />
 
       <SummaryCards summary={summary} />
+
+      <BalanceCheck summary={summary} month={month} year={year} />
 
       <TransactionForm
         onSubmit={addTransaction}
