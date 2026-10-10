@@ -102,6 +102,8 @@ const MANUAL_ENTRIES = [
   { refId: 'manual-bca-20261001-hutang', description: 'Hutang bulanan (angsuran ke 15)', amount: 1_750_000, note: 'Transfer BCA ke TRIYANI (biaya admin Rp 2.500)', date: new Date(2026, 9, 1, 8, 14, 0) },
   { refId: 'manual-bca-20261001-gadai', description: 'Ambil gadai laptop', amount: 4_250_000, note: 'Transfer BCA ke RIJAH', date: new Date(2026, 9, 1, 8, 15, 24) },
   { refId: 'manual-bca-20261001-mamah', description: 'Bayar hutang ke mamah', amount: 3_100_000, note: 'Transfer BCA ke RIJAH', date: new Date(2026, 9, 1, 11, 20, 7) },
+  { refId: 'manual-livin-20261009-tenis', description: 'Tenis', amount: 120_000, note: 'Transfer Livin\u2019 ke TAN CHUN MIN', date: new Date(2026, 9, 9, 13, 23, 58) },
+  { refId: 'manual-livin-20261009-tenis-fee', description: 'Biaya transfer (Tenis)', amount: 2_500, note: 'Biaya BI Fast Livin\u2019', date: new Date(2026, 9, 9, 13, 23, 59) },
 ];
 
 async function seedManualEntries(): Promise<void> {
