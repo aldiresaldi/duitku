@@ -54,15 +54,7 @@ class FinanceDB extends Dexie {
       }
     });
 
-    // Hapus semua transaksi manual bawaan yang pernah di-hardcode (refId 'manual-*')
-    this.version(6).stores({}).upgrade(async (tx) => {
-      const all = await tx.table('transactions').toArray();
-      for (const t of all) {
-        if (t.refId && String(t.refId).startsWith('manual-')) {
-          await tx.table('transactions').delete(t.id);
-        }
-      }
-    });
+    this.version(6).stores({});
   }
 }
 
