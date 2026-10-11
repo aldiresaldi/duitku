@@ -79,7 +79,7 @@ export function BalanceCheck({ summary, month, year }: Props) {
               id="realBalance"
               className="balance-check__input"
               inputMode="numeric"
-              placeholder="Contoh: 3700000"
+              placeholder="Masukkan saldo riil"
               value={balanceInput}
               onChange={(e) => setBalanceInput(e.target.value)}
             />
